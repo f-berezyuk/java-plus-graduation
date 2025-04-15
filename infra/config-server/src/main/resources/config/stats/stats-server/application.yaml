@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://stats-db:5432/ewm-stats
+    username: root
+    password: root
+  sql:
+    init:
+      mode: always
+
+hibernate:
+  show_sql: true
+  jdbc:
+    time_zone: UTC
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.springframework.orm.jpa: INFO
+    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+    org.springframework.transaction.interceptor: TRACE
+    org.springframework.transaction: INFO
