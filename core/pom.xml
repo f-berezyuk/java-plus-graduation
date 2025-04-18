@@ -14,5 +14,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>main-service</module>
+        <module>event_service</module>
+        <module>interaction-api</module>
     </modules>
 </project>
