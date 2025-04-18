@@ -1,9 +1,9 @@
 package ru.practicum.comment.service;
 
-import ru.practicum.comment.dto.CommentDto;
-import ru.practicum.comment.dto.CommentDtoPublic;
-
 import java.util.List;
+
+import ru.practicum.dto.comment.CommentDto;
+import ru.practicum.dto.comment.CommentDtoPublic;
 
 public interface CommentService {
 
