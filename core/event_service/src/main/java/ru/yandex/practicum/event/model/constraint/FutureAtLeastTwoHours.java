@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import ru.practicum.event.model.constraint.FutureAtLeastTwoHoursValidator;
 
 @Constraint(validatedBy = FutureAtLeastTwoHoursValidator.class)
 @Target({ElementType.FIELD})

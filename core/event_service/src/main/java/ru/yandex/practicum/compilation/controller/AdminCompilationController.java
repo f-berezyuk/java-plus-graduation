@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.compilation.dto.CompilationDto;
-import ru.practicum.compilation.dto.NewCompilationDto;
-import ru.practicum.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.compilation.service.CompilationService;
+import ru.practicum.dto.compilation.CompilationDto;
+import ru.practicum.dto.compilation.NewCompilationDto;
+import ru.practicum.dto.compilation.UpdateCompilationRequest;
+
+import ru.yandex.practicum.compilation.service.CompilationService;
 
 @RestController
 @RequestMapping("/admin/compilations")
@@ -41,6 +42,4 @@ public class AdminCompilationController {
                                             @RequestBody @Valid UpdateCompilationRequest request) throws BadRequestException {
         return compilationService.update(id, request);
     }
-
-
 }

@@ -35,9 +35,7 @@ import ru.practicum.dto.event.UpdateEventUserRequest;
 import ru.practicum.dto.request.RequestDto;
 import ru.practicum.dto.request.RequestStatus;
 import ru.practicum.dto.request.req_rsp.RequestsSaveAllReq;
-import ru.practicum.feign.client.CategoriesServiceClient;
 import ru.practicum.feign.client.RequestServiceClient;
-import ru.practicum.feign.client.UserServiceClient;
 
 import ru.yandex.practicum.event.mapper.EventMapper;
 import ru.yandex.practicum.event.mapper.ReqMapper;
@@ -55,8 +53,6 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final EventMapper mapper;
     private final ReqMapper requestMapper;
-    private final UserServiceClient userServiceClient;
-    private final CategoriesServiceClient categoryServiceClient;
     private final ViewService viewService;
     @SuppressWarnings("unused")
     @PersistenceContext
@@ -92,7 +88,7 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional(readOnly = true)
     public EventFullDto getEvent(Long userId, Long eventId) {
-        Event event = eventRepository.findByIdAndUser_Id(eventId, userId).orElseThrow(() -> new NotFoundException(
+        Event event = eventRepository.findByIdAndUserId(eventId, userId).orElseThrow(() -> new NotFoundException(
                 "Event with id " + eventId + " and user id " + userId + " was not found"));
         return mapper.toFullDto(event);
     }
@@ -103,7 +99,7 @@ public class EventServiceImpl implements EventService {
         if (request.getEventDate() != null && request.getEventDate().isBefore(LocalDateTime.now().plusHours(2L))) {
             throw new IllegalArgumentException("Not valid time. Should not be less than now + 2 hours.");
         }
-        Event event = eventRepository.findByIdAndUser_Id(eventId, userId).orElseThrow(() -> new NotFoundException(
+        Event event = eventRepository.findByIdAndUserId(eventId, userId).orElseThrow(() -> new NotFoundException(
                 "Event with id " + eventId + " was not found"));
 
         var updateBuilder = event.toBuilder();
@@ -122,7 +118,7 @@ public class EventServiceImpl implements EventService {
         }
 
         if (request.getLocation() != null) {
-            final Location newLocation = request.getLocation();
+            final Location newLocation = mapper.toEntity(request.getLocation());
             Location updatedLocation = null;
             if (newLocation.getId() == null) {
                 updatedLocation =

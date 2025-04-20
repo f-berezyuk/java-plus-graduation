@@ -41,4 +41,6 @@ public interface EventMapper {
     void updateFromUserRequest(UpdateEventUserRequest updateRequest, @MappingTarget Event event);
 
     Location toEntity(LocationDto location);
+
+    LocationDto toDto(Location location);
 }

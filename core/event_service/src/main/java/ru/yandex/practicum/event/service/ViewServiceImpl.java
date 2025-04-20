@@ -5,9 +5,10 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.event.model.Event;
-import ru.practicum.event.model.EventView;
-import ru.practicum.event.repository.ViewRepository;
+
+import ru.yandex.practicum.event.model.Event;
+import ru.yandex.practicum.event.model.EventView;
+import ru.yandex.practicum.event.repository.ViewRepository;
 
 @Service
 @AllArgsConstructor

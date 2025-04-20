@@ -10,14 +10,15 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import ru.practicum.common.NotFoundException;
 import ru.practicum.common.PageableBuilder;
-import ru.practicum.compilation.dto.CompilationDto;
-import ru.practicum.compilation.dto.NewCompilationDto;
-import ru.practicum.compilation.dto.UpdateCompilationRequest;
-import ru.practicum.compilation.mapper.CompilationMapper;
-import ru.practicum.compilation.model.Compilation;
-import ru.practicum.compilation.repository.CompilationsRepository;
-import ru.practicum.event.model.Event;
-import ru.practicum.event.repository.EventRepository;
+import ru.practicum.dto.compilation.CompilationDto;
+import ru.practicum.dto.compilation.NewCompilationDto;
+import ru.practicum.dto.compilation.UpdateCompilationRequest;
+
+import ru.yandex.practicum.compilation.mapper.CompilationMapper;
+import ru.yandex.practicum.compilation.model.Compilation;
+import ru.yandex.practicum.compilation.repository.CompilationsRepository;
+import ru.yandex.practicum.event.model.Event;
+import ru.yandex.practicum.event.repository.EventRepository;
 
 @Slf4j
 @Service
@@ -42,7 +43,8 @@ public class CompilationServiceImpl implements CompilationService {
         var compilations = compilationPage.getContent();
 
         log.debug("Found {} compilations", compilations.size());
-        return compilations.isEmpty() ? Collections.emptyList() : compilations.stream().map(compilationMapper::toCompilationDto).toList();
+        return compilations.isEmpty() ? Collections.emptyList() :
+                compilations.stream().map(compilationMapper::toCompilationDto).toList();
     }
 
     @Override

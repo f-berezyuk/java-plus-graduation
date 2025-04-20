@@ -3,7 +3,8 @@ package ru.yandex.practicum.event.service;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
-import ru.practicum.event.model.Event;
+
+import ru.yandex.practicum.event.model.Event;
 
 public interface ViewService {
     void registerAll(List<Event> events, HttpServletRequest request);

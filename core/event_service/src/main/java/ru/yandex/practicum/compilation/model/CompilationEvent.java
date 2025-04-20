@@ -12,7 +12,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.event.model.Event;
+
+import ru.yandex.practicum.event.model.Event;
 
 @Entity
 @Table(name = "compilation_event")
