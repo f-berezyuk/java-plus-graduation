@@ -3,9 +3,66 @@ spring:
     gateway:
       discovery.locator.enabled: true
       routes:
-        - id: main_service_route
+        - id: admin_event_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/events/{eventId}/confirmed-requests,/admin/events/{eventId},/admin/events
+
+        - id: event_service_category_admin_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/categories,/admin/categories/{id}
+
+        - id: event_service_category_public_route
+          uri: lb://event-service
+          predicates:
+            - Path=/categories,/categories/{catId}
+
+        - id: event_service_event_private_route_1
+          uri: lb://event-service
+          predicates:
+            - Path=/users/{userId}/events,/users/{userId}/events/{eventId},/users/{userId}/events/{eventId}/requests,/events/{id},/events/internal/{id},/events
+          metadata:
+            order: 2
+
+        - id: main_service_comment_route_1
           uri: lb://main-service
           predicates:
-            - Path=/**
+            - Path=/users/{userId}/events/{eventId}/comments
+            - Method=POST
+          metadata:
+            order: 1
+
+        - id: main_service_comment_route_2
+          uri: lb://main-service
+          predicates:
+            - Path=/users/{userId}/comments/{commentId},/users/events/{eventId}/comments,/admin/comments/{commentId},events/{eventId}/comments
+
+        - id: main_service_comment_route_3
+          uri: lb://main-service
+          predicates:
+            - Path=/users/events/{eventId}/comments
+            - Method=GET
+
+        - id: event_service_compilation_public_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/compilations,/admin/compilations/{id},/compilations,/compilations/{id}
+
+        - id: request_service_private_route_2
+          uri: lb://request-service
+          predicates:
+            - Path=/users/{userId}/requests/**
+
+        - id: user_service_admin_route
+          uri: lb://user-service
+          predicates:
+            - Path=/admin/users,/admin/users/{userId}
+
+        - id: stats_service_route
+          uri: lb://stats-server
+          predicates:
+            - Path=/stats,/hit
+
 server:
   port: 8080
