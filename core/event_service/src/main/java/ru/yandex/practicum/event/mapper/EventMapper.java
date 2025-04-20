@@ -5,12 +5,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.event.LocationDto;
-import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
-import ru.practicum.dto.event.UpdateEventUserRequest;
+import ru.practicum.interaction.dto.event.EventFullDto;
+import ru.practicum.interaction.dto.event.EventShortDto;
+import ru.practicum.interaction.dto.event.LocationDto;
+import ru.practicum.interaction.dto.event.NewEventDto;
+import ru.practicum.interaction.dto.event.UpdateEventAdminRequest;
+import ru.practicum.interaction.dto.event.UpdateEventUserRequest;
 
 import ru.yandex.practicum.event.model.Event;
 import ru.yandex.practicum.event.model.Location;

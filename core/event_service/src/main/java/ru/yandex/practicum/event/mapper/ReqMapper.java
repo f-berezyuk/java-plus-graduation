@@ -3,8 +3,8 @@ package ru.yandex.practicum.event.mapper;
 import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import ru.practicum.dto.event.ParticipationRequestDto;
-import ru.practicum.dto.request.RequestDto;
+import ru.practicum.interaction.dto.event.ParticipationRequestDto;
+import ru.practicum.interaction.dto.request.RequestDto;
 
 @Mapper(componentModel = "spring")
 public interface ReqMapper {

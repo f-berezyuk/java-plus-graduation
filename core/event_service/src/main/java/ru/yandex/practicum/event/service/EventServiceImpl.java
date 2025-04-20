@@ -19,23 +19,23 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.common.ConflictException;
-import ru.practicum.common.NotFoundException;
-import ru.practicum.common.PageableBuilder;
-import ru.practicum.common.ValidationException;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.EventRequestStatusUpdateRequest;
-import ru.practicum.dto.event.EventRequestStatusUpdateResult;
-import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.dto.event.ParticipationRequestDto;
-import ru.practicum.dto.event.StateAction;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
-import ru.practicum.dto.event.UpdateEventUserRequest;
-import ru.practicum.dto.request.RequestDto;
-import ru.practicum.dto.request.RequestStatus;
-import ru.practicum.dto.request.req_rsp.RequestsSaveAllReq;
-import ru.practicum.feign.client.RequestServiceClient;
+import ru.practicum.interaction.common.ConflictException;
+import ru.practicum.interaction.common.NotFoundException;
+import ru.practicum.interaction.common.PageableBuilder;
+import ru.practicum.interaction.common.ValidationException;
+import ru.practicum.interaction.dto.event.EventFullDto;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateRequest;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateResult;
+import ru.practicum.interaction.dto.event.EventShortDto;
+import ru.practicum.interaction.dto.event.NewEventDto;
+import ru.practicum.interaction.dto.event.ParticipationRequestDto;
+import ru.practicum.interaction.dto.event.StateActionDto;
+import ru.practicum.interaction.dto.event.UpdateEventAdminRequest;
+import ru.practicum.interaction.dto.event.UpdateEventUserRequest;
+import ru.practicum.interaction.dto.request.RequestDto;
+import ru.practicum.interaction.dto.request.RequestStatusDto;
+import ru.practicum.interaction.dto.request.req_rsp.RequestsSaveAllReq;
+import ru.practicum.interaction.feign.client.RequestServiceClient;
 
 import ru.yandex.practicum.event.mapper.EventMapper;
 import ru.yandex.practicum.event.mapper.ReqMapper;
@@ -108,13 +108,13 @@ public class EventServiceImpl implements EventService {
             throw new ConflictException("Only pending or canceled events can be changed");
         }
 
-        if (request.getStateAction() != null) {
-            Map<StateAction, EventState> map = Map.of(
-                    StateAction.SEND_TO_REVIEW, EventState.PENDING,
-                    StateAction.CANCEL_REVIEW, EventState.CANCELED
+        if (request.getStateActionDto() != null) {
+            Map<StateActionDto, EventState> map = Map.of(
+                    StateActionDto.SEND_TO_REVIEW, EventState.PENDING,
+                    StateActionDto.CANCEL_REVIEW, EventState.CANCELED
             );
 
-            updateBuilder.state(map.get(request.getStateAction()));
+            updateBuilder.state(map.get(request.getStateActionDto()));
         }
 
         if (request.getLocation() != null) {
@@ -165,21 +165,21 @@ public class EventServiceImpl implements EventService {
 
         Event event = getOrThrow(eventId);
         int size = requestIds.size();
-        int confirmedSize = updateRequest.getStatus() == RequestStatus.CONFIRMED ? size : 0;
+        int confirmedSize = updateRequest.getStatus() == RequestStatusDto.CONFIRMED ? size : 0;
         if (event.getParticipantLimit() - confirmedRequestCount < confirmedSize) {
             throw new ConflictException("Event limit exceed. Only " +
                                         (event.getParticipantLimit() - confirmedRequestCount) + " places left.");
         }
 
         for (RequestDto request : requests) {
-            if (updateRequest.getStatus() == RequestStatus.CONFIRMED) {
-                request.setStatus(RequestStatus.CONFIRMED);
+            if (updateRequest.getStatus() == RequestStatusDto.CONFIRMED) {
+                request.setStatus(RequestStatusDto.CONFIRMED);
                 confirmedRequests.add(requestMapper.toParticipationRequestDto(request));
-            } else if (updateRequest.getStatus() == RequestStatus.REJECTED) {
-                if (request.getStatus() == RequestStatus.CONFIRMED) {
+            } else if (updateRequest.getStatus() == RequestStatusDto.REJECTED) {
+                if (request.getStatus() == RequestStatusDto.CONFIRMED) {
                     throw new ConflictException("Forbidden to reject confirmed request.");
                 }
-                request.setStatus(RequestStatus.REJECTED);
+                request.setStatus(RequestStatusDto.REJECTED);
                 rejectedRequests.add(requestMapper.toParticipationRequestDto(request));
             }
         }
@@ -335,7 +335,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " was not found"));
 
-        validateEventStateForAdminUpdate(event, request.getStateAction());
+        validateEventStateForAdminUpdate(event, request.getStateActionDto());
 
         Location location = mapper.toEntity(request.getLocation());
         if (location != null && location.getId() == null) {
@@ -343,7 +343,7 @@ public class EventServiceImpl implements EventService {
         }
 
         mapper.updateFromAdminRequest(request, event);
-        event.setState(request.getStateAction() == StateAction.PUBLISH_EVENT ? EventState.PUBLISHED :
+        event.setState(request.getStateActionDto() == StateActionDto.PUBLISH_EVENT ? EventState.PUBLISHED :
                 EventState.CANCELED);
         return mapper.toFullDto(eventRepository.saveAndFlush(event));
     }
@@ -354,11 +354,11 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " was not found"));
     }
 
-    private void validateEventStateForAdminUpdate(Event event, StateAction stateAction) {
-        if (stateAction == StateAction.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
+    private void validateEventStateForAdminUpdate(Event event, StateActionDto stateActionDto) {
+        if (stateActionDto == StateActionDto.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new ConflictException("Cannot publish the event because it's not in the right state");
         }
-        if (stateAction == StateAction.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
+        if (stateActionDto == StateActionDto.REJECT_EVENT && event.getState() == EventState.PUBLISHED) {
             throw new ConflictException("Cannot cancel the event because it has been published");
         }
     }

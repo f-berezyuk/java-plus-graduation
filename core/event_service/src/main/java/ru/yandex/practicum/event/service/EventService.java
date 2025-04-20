@@ -5,14 +5,14 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.event.EventRequestStatusUpdateRequest;
-import ru.practicum.dto.event.EventRequestStatusUpdateResult;
-import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.dto.event.NewEventDto;
-import ru.practicum.dto.event.UpdateEventAdminRequest;
-import ru.practicum.dto.event.UpdateEventUserRequest;
-import ru.practicum.dto.request.RequestDto;
+import ru.practicum.interaction.dto.event.EventFullDto;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateRequest;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateResult;
+import ru.practicum.interaction.dto.event.EventShortDto;
+import ru.practicum.interaction.dto.event.NewEventDto;
+import ru.practicum.interaction.dto.event.UpdateEventAdminRequest;
+import ru.practicum.interaction.dto.event.UpdateEventUserRequest;
+import ru.practicum.interaction.dto.request.RequestDto;
 
 import ru.yandex.practicum.event.model.Event;
 

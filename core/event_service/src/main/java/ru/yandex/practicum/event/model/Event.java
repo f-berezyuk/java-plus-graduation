@@ -24,7 +24,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.common.constraint.FutureAtLeastTwoHours;
+import ru.practicum.interaction.common.constraint.FutureAtLeastTwoHours;
 
 import ru.yandex.practicum.compilation.model.Compilation;
 

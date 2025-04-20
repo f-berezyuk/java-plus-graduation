@@ -2,7 +2,7 @@ package ru.yandex.practicum.compilation.mapper;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.practicum.dto.compilation.CompilationDto;
+import ru.practicum.interaction.dto.compilation.CompilationDto;
 
 import ru.yandex.practicum.compilation.model.Compilation;
 import ru.yandex.practicum.event.mapper.EventMapper;

@@ -8,11 +8,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
-import ru.practicum.common.NotFoundException;
-import ru.practicum.common.PageableBuilder;
-import ru.practicum.dto.compilation.CompilationDto;
-import ru.practicum.dto.compilation.NewCompilationDto;
-import ru.practicum.dto.compilation.UpdateCompilationRequest;
+import ru.practicum.interaction.common.NotFoundException;
+import ru.practicum.interaction.common.PageableBuilder;
+import ru.practicum.interaction.dto.compilation.CompilationDto;
+import ru.practicum.interaction.dto.compilation.NewCompilationDto;
+import ru.practicum.interaction.dto.compilation.UpdateCompilationRequest;
 
 import ru.yandex.practicum.compilation.mapper.CompilationMapper;
 import ru.yandex.practicum.compilation.model.Compilation;
