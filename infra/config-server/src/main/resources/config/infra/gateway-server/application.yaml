@@ -7,5 +7,12 @@ spring:
           uri: lb://main-service
           predicates:
             - Path=/**
+        - id: event_service_route
+          uri: lb://event-service
+          predicates:
+            - Path=/admin/compilations/**
+            - Path=/compilations/**
+            - Path=/users/{userId}/events/**
+            - Path=/events/**
 server:
   port: 8080
