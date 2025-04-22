@@ -37,6 +37,7 @@ import ru.practicum.interaction.dto.request.RequestStatusDto;
 import ru.practicum.interaction.dto.request.req_rsp.RequestsSaveAllReq;
 import ru.practicum.interaction.feign.client.RequestServiceClient;
 
+import ru.yandex.practicum.categories.service.CategoriesService;
 import ru.yandex.practicum.event.mapper.EventMapper;
 import ru.yandex.practicum.event.mapper.ReqMapper;
 import ru.yandex.practicum.event.model.Event;
@@ -54,6 +55,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper mapper;
     private final ReqMapper requestMapper;
     private final ViewService viewService;
+    private final CategoriesService categoriesService;
     @SuppressWarnings("unused")
     @PersistenceContext
     private EntityManager entityManager;
@@ -131,7 +133,8 @@ public class EventServiceImpl implements EventService {
         }
 
         Optional.ofNullable(request.getAnnotation()).ifPresent(updateBuilder::annotation);
-        Optional.ofNullable(request.getCategory()).ifPresent(updateBuilder::categoryId);
+        Optional.ofNullable(request.getCategory()).ifPresent(catId ->
+                updateBuilder.category(categoriesService.getOrThrow(catId)));
         Optional.ofNullable(request.getDescription()).ifPresent(updateBuilder::description);
         Optional.ofNullable(request.getEventDate()).ifPresent(updateBuilder::eventDate);
         Optional.ofNullable(request.getPaid()).ifPresent(updateBuilder::paid);

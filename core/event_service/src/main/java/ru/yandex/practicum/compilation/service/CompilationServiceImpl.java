@@ -16,7 +16,7 @@ import ru.practicum.interaction.dto.compilation.UpdateCompilationRequest;
 
 import ru.yandex.practicum.compilation.mapper.CompilationMapper;
 import ru.yandex.practicum.compilation.model.Compilation;
-import ru.yandex.practicum.compilation.repository.CompilationsRepository;
+import ru.yandex.practicum.compilation.repository.CompilationRepository;
 import ru.yandex.practicum.event.model.Event;
 import ru.yandex.practicum.event.repository.EventRepository;
 
@@ -24,7 +24,7 @@ import ru.yandex.practicum.event.repository.EventRepository;
 @Service
 @AllArgsConstructor
 public class CompilationServiceImpl implements CompilationService {
-    private final CompilationsRepository compilationsRepository;
+    private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     private final CompilationMapper compilationMapper;
 
@@ -39,7 +39,7 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> getAll(boolean pinned, int from, int size) {
         log.debug("Fetching compilations with pinned={} from={} size={}", pinned, from, size);
         var pageable = PageableBuilder.getPageable(from, size, "id");
-        var compilationPage = compilationsRepository.findByPinned(pinned, pageable);
+        var compilationPage = compilationRepository.findByPinned(pinned, pageable);
         var compilations = compilationPage.getContent();
 
         log.debug("Found {} compilations", compilations.size());
@@ -50,7 +50,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto get(Long id) {
         log.debug("Fetching compilation with id={}", id);
-        return compilationsRepository.findById(id).map(compilationMapper::toCompilationDto).orElse(null);
+        return compilationRepository.findById(id).map(compilationMapper::toCompilationDto).orElse(null);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         Optional.ofNullable(newCompilationDto.getTitle()).ifPresent(compilationBuilder::title);
 
-        var result = compilationsRepository.saveAndFlush(compilationBuilder.build());
+        var result = compilationRepository.saveAndFlush(compilationBuilder.build());
         log.info("Successfully added compilation with id={}", result.getId());
         return compilationMapper.toCompilationDto(result);
     }
@@ -76,13 +76,13 @@ public class CompilationServiceImpl implements CompilationService {
     public void delete(Long id) {
         log.debug("Deleting compilation with id={}", id);
         var compilation = getOrElseThrow(id);
-        compilationsRepository.delete(compilation);
+        compilationRepository.delete(compilation);
         log.info("Successfully deleted compilation with id={}", id);
     }
 
     public Compilation getOrElseThrow(Long id) {
         log.debug("Fetching compilation or throwing exception for id={}", id);
-        return compilationsRepository.findById(id).orElseThrow(() -> new NotFoundException("Compilation with id=" + id + " was not found"));
+        return compilationRepository.findById(id).orElseThrow(() -> new NotFoundException("Compilation with id=" + id + " was not found"));
     }
 
     @Override
@@ -106,7 +106,7 @@ public class CompilationServiceImpl implements CompilationService {
             updateBuilder.title(request.getTitle());
         }
 
-        var result = compilationsRepository.saveAndFlush(updateBuilder.build());
+        var result = compilationRepository.saveAndFlush(updateBuilder.build());
         log.info("Successfully updated compilation with id={}", id);
         return compilationMapper.toCompilationDto(result);
     }

@@ -26,6 +26,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.practicum.interaction.common.constraint.FutureAtLeastTwoHours;
 
+import ru.yandex.practicum.categories.model.Category;
 import ru.yandex.practicum.compilation.model.Compilation;
 
 @Getter
@@ -41,8 +42,9 @@ public class Event {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "category_id")
-    private Long categoryId;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Column(name = "user_id")
     private Long userId;
@@ -59,7 +61,7 @@ public class Event {
     private int confirmedRequests;
     private int participantLimit;
 
-    @OneToMany(mappedBy = "ru/yandex/practicum/event")
+    @OneToMany(mappedBy = "event")
     private List<EventView> views;
 
     private boolean requestModeration = true;

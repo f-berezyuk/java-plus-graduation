@@ -9,7 +9,7 @@ import ru.practicum.interaction.dto.request.RequestDto;
 @Mapper(componentModel = "spring")
 public interface ReqMapper {
 
-    @Mapping(target = "ru/yandex/practicum/event", source = "ru/yandex/practicum/event")
+    @Mapping(target = "event", source = "event")
     @Mapping(target = "created", source = "created")
     @Mapping(target = "id", source = "id")
     @Mapping(target = "requester", source = "requester")

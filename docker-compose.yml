@@ -123,7 +123,7 @@ services:
 
   ewm-event-service:
     build: core/event_service
-    container_name: ewm-event-service
+    container_name: ewm-event_service
     depends_on:
       ewm-db:
         condition: service_healthy

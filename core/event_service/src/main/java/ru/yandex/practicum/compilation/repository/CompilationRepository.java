@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.compilation.model.Compilation;
 
 @Repository
-public interface CompilationsRepository extends JpaRepository<Compilation, Long> {
+public interface CompilationRepository extends JpaRepository<Compilation, Long> {
     Page<Compilation> findByPinned(boolean pinned, Pageable pageable);
 }

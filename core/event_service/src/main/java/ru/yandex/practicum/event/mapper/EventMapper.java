@@ -22,13 +22,13 @@ public interface EventMapper {
     @Mapping(target = "views", expression = "java(event.getViews() == null ? 0 : event.getViews().size())")
     EventShortDto toShortDto(Event event);
 
-    @Mapping(target = "initiator", source = "user")
+    @Mapping(target = "initiator.id", source = "userId")
     @Mapping(target = "views", expression = "java(event.getViews() == null ? 0 : event.getViews().size())")
     EventFullDto toFullDto(Event event);
 
     @Mapping(target = "category.id", source = "category")
     @Mapping(target = "createdOn", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "state", expression = "java(ru.practicum.ru.yandex.practicum.model.event.EventState.PENDING)")
+    @Mapping(target = "state", expression = "java(EventState.PENDING)")
     @Mapping(target = "participantLimit", source = "participantLimit", defaultValue = "0")
     Event toEntity(NewEventDto newEventDto);
 

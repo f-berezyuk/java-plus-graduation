@@ -14,7 +14,7 @@ import ru.yandex.practicum.event.model.EventState;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
-    @Query("select e from Event e where e.user.id = :userId")
+    @Query("select e from Event e where e.userId = :userId")
     Page<Event> findAllByUserId(Long userId, Pageable pageable);
 
     List<Event> findAllByIdIn(List<Long> events);
