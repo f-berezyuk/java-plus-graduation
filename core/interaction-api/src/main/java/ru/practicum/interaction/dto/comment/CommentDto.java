@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 @Getter
 @Setter
 @ToString
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {

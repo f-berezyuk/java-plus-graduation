@@ -3,7 +3,9 @@ package ru.practicum.main.comment.service;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import ru.practicum.interaction.dto.user.UserDto;
 import ru.practicum.interaction.feign.client.EventServiceClient;
 import ru.practicum.interaction.feign.client.UserServiceClient;
 import ru.practicum.main.comment.mapper.CommentMapper;
+import ru.practicum.main.comment.mapper.MyCommentMapper;
 import ru.practicum.main.comment.model.Comment;
 import ru.practicum.main.comment.repository.CommentRepository;
 
@@ -36,13 +39,13 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto addCommentToEvent(Long authorId, Long eventId, CommentDto commentDto) {
         Comment comment = commentMapper.toComment(commentDto);
         EventFullDto event = eventServiceClient.getById(eventId);
-        userServiceClient.getUser(authorId);
+        UserDto author = userServiceClient.getUser(authorId);
         if (event.getState().equals(EventStateDto.PUBLISHED)) {
             comment.setAuthorId(authorId);
             comment.setEventId(eventId);
             comment.setCreate(LocalDateTime.now());
             log.info("Add new comment for event id = {} and user with ID = {}.", eventId, authorId);
-            return commentMapper.toCommentDto(commentRepository.saveAndFlush(comment));
+            return MyCommentMapper.toCommentDto(commentRepository.saveAndFlush(comment), author.getName());
         } else {
             String message = MessageFormat.format("Event {0} has not published yet.", eventId);
             log.error(message);
@@ -53,7 +56,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto getCommentByUser(Long authorId, Long commentId) {
         log.info("Get comment with ID = {} for user with ID = {}.", commentId, authorId);
-        return commentMapper.toCommentDto(getCommentById(commentId));
+        UserDto author = userServiceClient.getUser(authorId);
+        return MyCommentMapper.toCommentDto(getCommentById(commentId), author.getName());
     }
 
     @Override
@@ -61,8 +65,13 @@ public class CommentServiceImpl implements CommentService {
         EventFullDto event = eventServiceClient.getById(eventId);
         if (event.getState().equals(EventStateDto.PUBLISHED)) {
             List<Comment> comments = commentRepository.findAllByEventIdOrderByEventId(eventId);
+            List<Long> ids = comments.stream().map(Comment::getAuthorId).toList();
+            Map<Long, UserDto> users = userServiceClient.getUsers(ids, 0, ids.size()).stream()
+                    .collect(Collectors.toMap(UserDto::getId, Function.identity()));
             log.info("Get comment for event ID = {}.", eventId);
-            return comments.stream().map(commentMapper::toCommentDto).collect(Collectors.toList());
+            return comments.stream().map((Comment comment) -> MyCommentMapper
+                            .toCommentDto(comment, users.get(comment.getAuthorId()).getName()))
+                    .collect(Collectors.toList());
         } else {
             String message = MessageFormat.format("Event {0} has not published yet.", eventId);
             log.error(message);
@@ -78,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
             comment.setText(commentDto.getText());
             comment.setCreate(LocalDateTime.now());
             log.info("Update comment with ID {}.", commentId);
-            return commentMapper.toCommentDto(commentRepository.save(comment));
+            return MyCommentMapper.toCommentDto(commentRepository.save(comment), author.getName());
         } else {
             String message = MessageFormat.format("The user ID {0} not the author of comment ID {1}.", authorId,
                     commentId);
@@ -103,8 +112,9 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = getCommentById(commentId);
         comment.setText(commentDto.getText());
         comment.setCreate(LocalDateTime.now());
+        UserDto author = userServiceClient.getUser(comment.getAuthorId());
         log.info("Update comment with ID= {} by admin.", commentId);
-        return commentMapper.toCommentDto(commentRepository.save(comment));
+        return MyCommentMapper.toCommentDto(commentRepository.save(comment), author.getName());
     }
 
     @Override

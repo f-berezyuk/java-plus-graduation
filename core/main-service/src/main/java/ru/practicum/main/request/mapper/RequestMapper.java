@@ -10,13 +10,13 @@ import ru.practicum.main.request.model.Request;
 @Mapper(componentModel = "spring")
 public interface RequestMapper {
 
-    @Mapping(target = "event", source = "event.id")
+    @Mapping(target = "eventId", source = "eventId")
     @Mapping(target = "requester", source = "requester.id")
     RequestDto toDto(Request request);
 
     List<RequestDto> toDtos(List<Request> requests);
 
-    @Mapping(target = "event.id", source = "event")
+    @Mapping(target = "eventId", source = "eventId")
     @Mapping(target = "requester.id", source = "requester")
     Request toEntity(RequestDto requestDto);
 
