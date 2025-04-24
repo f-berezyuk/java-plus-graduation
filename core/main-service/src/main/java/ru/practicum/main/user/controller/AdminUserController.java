@@ -44,6 +44,11 @@ public class AdminUserController {
         return service.registerUser(userRequestDto);
     }
 
+    @GetMapping("/{userId}")
+    public UserDto getUser(@PathVariable(name = "userId") Long userId) {
+        return service.getUser(userId);
+    }
+
     @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable(name = "userId") Long userId) {

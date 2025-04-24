@@ -7,8 +7,6 @@ import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.main.common.ConflictException;
-import ru.practicum.main.common.NotFoundException;
 import ru.practicum.interaction.dto.request.RequestDto;
 import ru.practicum.main.event.model.Event;
 import ru.practicum.main.event.model.EventState;

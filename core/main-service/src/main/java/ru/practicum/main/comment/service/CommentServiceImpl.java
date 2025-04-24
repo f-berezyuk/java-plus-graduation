@@ -1,47 +1,45 @@
 package ru.practicum.main.comment.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import ru.practicum.main.comment.mapper.CommentMapper;
-import ru.practicum.main.comment.model.Comment;
-import ru.practicum.main.comment.repository.CommentRepository;
-import ru.practicum.main.common.ConflictException;
-import ru.practicum.main.common.NotFoundException;
-import ru.practicum.interaction.dto.comment.CommentDto;
-import ru.practicum.interaction.dto.comment.CommentDtoPublic;
-import ru.practicum.main.event.model.Event;
-import ru.practicum.main.event.model.EventState;
-import ru.practicum.main.event.repository.EventRepository;
-import ru.practicum.main.user.model.User;
-import ru.practicum.main.user.repository.UserRepository;
-
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.practicum.interaction.common.ConflictException;
+import ru.practicum.interaction.common.NotFoundException;
+import ru.practicum.interaction.dto.comment.CommentDto;
+import ru.practicum.interaction.dto.comment.CommentDtoPublic;
+import ru.practicum.interaction.dto.event.EventFullDto;
+import ru.practicum.interaction.dto.event.EventStateDto;
+import ru.practicum.interaction.dto.user.UserDto;
+import ru.practicum.interaction.feign.client.EventServiceClient;
+import ru.practicum.interaction.feign.client.UserServiceClient;
+import ru.practicum.main.comment.mapper.CommentMapper;
+import ru.practicum.main.comment.model.Comment;
+import ru.practicum.main.comment.repository.CommentRepository;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CommentServiceImpl implements CommentService {
 
-    private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final EventServiceClient eventServiceClient;
+    private final UserServiceClient userServiceClient;
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
 
     @Override
     public CommentDto addCommentToEvent(Long authorId, Long eventId, CommentDto commentDto) {
         Comment comment = commentMapper.toComment(commentDto);
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found."));
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        if (event.getState().equals(EventState.PUBLISHED)) {
-            comment.setAuthor(author);
-            comment.setEvent(event);
+        EventFullDto event = eventServiceClient.getById(eventId);
+        UserDto author = userServiceClient.getUser(authorId);
+        if (event.getState().equals(EventStateDto.PUBLISHED)) {
+            comment.setAuthorId(authorId);
+            comment.setEventId(eventId);
             comment.setCreate(LocalDateTime.now());
             log.info("Add new comment for event id = {} and user with ID = {}.", eventId, authorId);
             return commentMapper.toCommentDto(commentRepository.saveAndFlush(comment));
@@ -60,10 +58,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDto> getAllCommentsByEvent(Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found."));
-        if (event.getState().equals(EventState.PUBLISHED)) {
-            List<Comment> comments = commentRepository.findAllByEventOrderByEvent(event);
+        EventFullDto event = eventServiceClient.getById(eventId);
+        if (event.getState().equals(EventStateDto.PUBLISHED)) {
+            List<Comment> comments = commentRepository.findAllByEventIdOrderByEventId(eventId);
             log.info("Get comment for event ID = {}.", eventId);
             return comments.stream().map(commentMapper::toCommentDto).collect(Collectors.toList());
         } else {
@@ -76,9 +73,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto updateCommentByUser(Long authorId, Long commentId, CommentDto commentDto) {
         Comment comment = getCommentById(commentId);
-        User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        if (comment.getAuthor().getId().equals(author.getId())) {
+        UserDto author = userServiceClient.getUser(authorId);
+        if (comment.getAuthorId().equals(author.getId())) {
             comment.setText(commentDto.getText());
             comment.setCreate(LocalDateTime.now());
             log.info("Update comment with ID {}.", commentId);
@@ -94,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteCommentByUser(Long authorId, Long commentId) {
         Comment comment = getCommentById(commentId);
-        if (comment.getAuthor().getId().equals(authorId)) {
+        if (comment.getAuthorId().equals(authorId)) {
             log.info("Delete comment with ID = {} by user ID {}.", commentId, authorId);
             commentRepository.deleteById(getCommentById(commentId).getId());
         } else {
@@ -119,14 +115,14 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentDtoPublic> getAllCommentsByEventPublic(Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found."));
-        if (event.getState().equals(EventState.PUBLISHED)) {
-            List<Comment> comments = commentRepository.findAllByEventOrderByEvent(event);
+        EventFullDto event = eventServiceClient.getById(eventId);
+        if (event.getState().equals(EventStateDto.PUBLISHED)) {
+            List<Comment> comments = commentRepository.findAllByEventIdOrderByEventId(eventId);
             log.info("Get public comment for event with ID = {}.", eventId);
             return comments.stream().map(commentMapper::toCommentDtoPublic).collect(Collectors.toList());
         } else {
-            String message = MessageFormat.format("The event {0} has not been published yet. Commenting is not available.", eventId);
+            String message = MessageFormat.format("The event {0} has not been published yet. Commenting is not " +
+                                                  "available.", eventId);
             log.error(message);
             throw new ConflictException(message);
         }

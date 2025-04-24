@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import ru.practicum.interaction.common.ApiError;
+import ru.practicum.interaction.common.ConflictException;
+import ru.practicum.interaction.common.NotFoundException;
+import ru.practicum.interaction.common.ValidationException;
 
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
-
     private static String getStackTrace(Exception e) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -48,7 +51,6 @@ public class ErrorHandler {
         return new ApiError(HttpStatus.NOT_FOUND, "The required object was not found.", e.getMessage(),
                 getStackTrace(e));
     }
-
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
