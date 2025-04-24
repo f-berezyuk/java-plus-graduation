@@ -357,6 +357,14 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " was not found"));
     }
 
+    @Override
+    public EventFullDto updateConfirmedRequests(Long eventId, int confirmedRequests) {
+        Event event = getOrThrow(eventId);
+        event.setConfirmedRequests(confirmedRequests);
+        event = eventRepository.saveAndFlush(event);
+        return mapper.toFullDto(event);
+    }
+
     private void validateEventStateForAdminUpdate(Event event, StateActionDto stateActionDto) {
         if (stateActionDto == StateActionDto.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new ConflictException("Cannot publish the event because it's not in the right state");

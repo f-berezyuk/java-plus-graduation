@@ -3,7 +3,6 @@ package ru.practicum.interaction.event.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,15 +35,19 @@ public class AdminEventController {
                                         @RequestParam(required = false)
                                         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
                                         @RequestParam(defaultValue = "0") int from,
-                                        @RequestParam(defaultValue = "10") int size,
-                                        HttpServletRequest httpServletRequest) {
+                                        @RequestParam(defaultValue = "10") int size) {
         return eventService.getAllEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
     @PatchMapping("/{eventId}")
     public EventFullDto updateEvent(@PathVariable Long eventId,
-                                    @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest,
-                                    HttpServletRequest httpServletRequest) {
+                                    @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest) {
         return eventService.updateEventByAdmin(eventId, updateEventAdminRequest);
+    }
+
+    @PatchMapping("/{eventId}/confirmed-requests")
+    public EventFullDto updateConfirmedRequests(@PathVariable Long eventId,
+                                                @RequestParam int confirmedRequests) {
+        return eventService.updateConfirmedRequests(eventId, confirmedRequests);
     }
 }

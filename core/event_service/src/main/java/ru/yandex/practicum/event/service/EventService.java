@@ -42,4 +42,6 @@ public interface EventService {
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request);
 
     Event getOrThrow(Long eventId);
+
+    EventFullDto updateConfirmedRequests(Long eventId, int confirmedRequests);
 }

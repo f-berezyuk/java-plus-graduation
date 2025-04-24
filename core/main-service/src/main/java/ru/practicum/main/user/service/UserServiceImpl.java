@@ -1,17 +1,20 @@
 package ru.practicum.main.user.service;
 
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.interaction.common.ConflictException;
+import ru.practicum.interaction.common.NotFoundException;
+import ru.practicum.interaction.common.PageableBuilder;
 import ru.practicum.main.user.dto.UserDto;
 import ru.practicum.main.user.dto.UserRequestDto;
 import ru.practicum.main.user.mapper.UserMapper;
 import ru.practicum.main.user.model.User;
 import ru.practicum.main.user.repository.UserRepository;
-
-import java.util.List;
 
 @Slf4j
 @Service

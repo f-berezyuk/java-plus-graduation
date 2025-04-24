@@ -36,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto addCommentToEvent(Long authorId, Long eventId, CommentDto commentDto) {
         Comment comment = commentMapper.toComment(commentDto);
         EventFullDto event = eventServiceClient.getById(eventId);
-        UserDto author = userServiceClient.getUser(authorId);
+        userServiceClient.getUser(authorId);
         if (event.getState().equals(EventStateDto.PUBLISHED)) {
             comment.setAuthorId(authorId);
             comment.setEventId(eventId);
