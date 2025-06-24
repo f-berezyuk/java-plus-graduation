@@ -9,6 +9,11 @@ spring:
         enabled: true
         serviceId: config-server
       fail-fast: true
+      retry:
+        initial-interval: 1000 # Начальный интервал (мс)
+        max-interval: 2000     # Максимальный интервал (мс)
+        multiplier: 1.5        # Множитель интервала
+        max-attempts: 5        # Максимум попыток
 server:
   port: 8080
 eureka:
