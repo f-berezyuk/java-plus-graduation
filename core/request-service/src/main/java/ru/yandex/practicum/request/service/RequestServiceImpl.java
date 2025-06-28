@@ -1,13 +1,18 @@
 package ru.yandex.practicum.request.service;
 
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.protobuf.Timestamp;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.ewm.stats.proto.ActionTypeProto;
+import ru.practicum.ewm.stats.proto.UserActionProto;
 import ru.practicum.interaction.common.ConflictException;
 import ru.practicum.interaction.common.NotFoundException;
 import ru.practicum.interaction.dto.event.EventFullDto;
@@ -17,6 +22,7 @@ import ru.practicum.interaction.dto.user.UserDto;
 import ru.practicum.interaction.feign.client.AdminEventServiceClient;
 import ru.practicum.interaction.feign.client.EventServiceClient;
 import ru.practicum.interaction.feign.client.UserServiceClient;
+import ru.practicum.stats.client.CollectorClient;
 
 import ru.yandex.practicum.request.mapper.RequestMapper;
 import ru.yandex.practicum.request.model.Request;
@@ -25,7 +31,9 @@ import ru.yandex.practicum.request.repository.RequestRepository;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RequestServiceImpl implements RequestService {
+    private final CollectorClient collectorClient;
     private final RequestRepository requestRepository;
     private final UserServiceClient userServiceClient;
     private final EventServiceClient eventServiceClient;
@@ -72,9 +80,24 @@ public class RequestServiceImpl implements RequestService {
         if (eventRequest.getStatus() == RequestStatus.CONFIRMED) {
             int confirmedRequests = event.getConfirmedRequests() + 1;
             adminEventServiceClient.internalUpdateConfirmedRequests(event.getId(), confirmedRequests);
+            collectorClient.sendUserAction(createUserAction(eventId, userId, ActionTypeProto.ACTION_REGISTER,
+                    Instant.now()));
         }
 
         return requestMapper.toDto(requestRepository.save(eventRequest));
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private UserActionProto createUserAction(Long eventId, Long userId, ActionTypeProto type, Instant timestamp) {
+        return UserActionProto.newBuilder()
+                .setUserId(userId)
+                .setEventId(eventId)
+                .setActionType(type)
+                .setTimestamp(Timestamp.newBuilder()
+                        .setSeconds(timestamp.getEpochSecond())
+                        .setNanos(timestamp.getNano())
+                        .build())
+                .build();
     }
 
     @Override
@@ -95,6 +118,12 @@ public class RequestServiceImpl implements RequestService {
         return requestRepository.findAllByEventId(eventId).stream()
                 .map(requestMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean isUserTakePart(Long userId, Long eventId) {
+        var request = requestRepository.findAllByEventId(eventId);
+        return request.stream().anyMatch(r -> r.getRequesterId().equals(userId));
     }
 
     private UserDto findUserById(long userId) {

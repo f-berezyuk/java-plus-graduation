@@ -1,0 +1,32 @@
+grpc.server.port: 0
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    #    url: jdbc:postgresql://stats-db:5432/ewm-stats
+    url: jdbc:postgresql://localhost:5432/ewm-stats
+    username: root
+    password: root
+  sql:
+    init:
+      mode: always
+  producer:
+    bootstrap-servers: kafka:29092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+hibernate:
+  show_sql: true
+  jdbc:
+    time_zone: UTC
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.springframework.orm.jpa: INFO
+    org.springframework.orm.jpa.JpaTransactionManager: DEBUG
+    org.springframework.transaction.interceptor: TRACE
+    org.springframework.transaction: INFO
+
+kafka.constants:
+  url: "localhost:9092"
+  action: "stats.user-actions.v1"
+  similarity: "stats.events-similarity.v1"

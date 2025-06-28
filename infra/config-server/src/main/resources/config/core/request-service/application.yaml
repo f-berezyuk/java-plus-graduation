@@ -6,7 +6,7 @@ spring:
         jdbc:
           time_zone: UTC
   datasource:
-    driverClassName: org.postgresql.Driver
+    driver-class-name: org.postgresql.Driver
     #    url: jdbc:postgresql://ewm-db:5432/ewm-event
     url: jdbc:postgresql://localhost:5432/ewm-request
 
@@ -25,3 +25,16 @@ logging:
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
     org.springframework.transaction.interceptor: TRACE
     org.springframework.transaction: INFO
+
+grpc:
+  client:
+    collector:
+      address: 'discovery:///collector'
+      enable-keep-alive: true
+      keep-alive-without-calls: true
+      negotiation-type: plaintext
+      enable-retry: true
+      retry-attempts: 15
+      retry-delay: 3000
+  server:
+    enabled: false  # Отключаем встроенный сервер

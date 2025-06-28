@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: collector-server
+  config:
+    import: "configserver:"
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        service-id: config-server
+      fail-fast: true
+      retry:
+        use-random-policy: true
+        max-interval: 6000
+  producer:
+    bootstrap-servers: kafka:29092
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 9093
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    preferIpAddress: true
+    hostname: localhost
+    instance-id: "${spring.application.name}:${server.port}"
+    leaseRenewalIntervalInSeconds: 10
+
+kafka.constants:
+  url: "localhost:9092"
+  topic: "stats.user-actions.v1"
+grpc.server.port: 9090
+
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Открывает все endpoints (для production ограничьте)
+      base-path: /actuator
+  server:
+    port: ${server.port}  # Использует основной порт приложения

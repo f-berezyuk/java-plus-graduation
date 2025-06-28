@@ -3,6 +3,7 @@ package ru.yandex.practicum.categories.service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -101,5 +102,11 @@ public class CategoriesServiceImpl implements CategoriesService {
         return categoriesRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category with id " + id + " not found"));
 
+    }
+
+    @Override
+    public List<CategoryDto> getCategoriesByIds(Set<Long> categoriesIds) {
+        return categoriesRepository.findAllById(categoriesIds).stream()
+                .map(categoryMapper::toDto).toList();
     }
 }

@@ -1,13 +1,20 @@
 package ru.yandex.practicum.event.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-import ru.practicum.interaction.dto.event.*;
-import ru.practicum.interaction.dto.request.RequestDto;
-import ru.yandex.practicum.event.model.Event;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import ru.practicum.interaction.dto.event.EventFullDto;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateRequest;
+import ru.practicum.interaction.dto.event.EventRequestStatusUpdateResult;
+import ru.practicum.interaction.dto.event.EventShortDto;
+import ru.practicum.interaction.dto.event.NewEventDto;
+import ru.practicum.interaction.dto.event.UpdateEventAdminRequest;
+import ru.practicum.interaction.dto.event.UpdateEventUserRequest;
+import ru.practicum.interaction.dto.request.RequestDto;
+
+import ru.yandex.practicum.event.model.Event;
 
 public interface EventService {
     List<EventShortDto> getAllByUserId(Long userId, int from, int size);
@@ -27,7 +34,7 @@ public interface EventService {
                                         Boolean onlyAvailable, String sort, int from, int size,
                                         HttpServletRequest request);
 
-    EventFullDto getPublicEvent(Long id, HttpServletRequest request);
+    EventFullDto getPublicEvent(Long id, Long userId, HttpServletRequest request);
 
     EventFullDto getPublicEvent(Long id);
 
@@ -39,4 +46,8 @@ public interface EventService {
     Event getOrThrow(Long eventId);
 
     void updateConfirmedRequests(Long eventId, int confirmedRequests);
+
+    List<EventFullDto> getRecommendations(Long userId);
+
+    void likeEvent(Long eventId, Long userId);
 }

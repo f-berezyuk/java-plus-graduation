@@ -13,8 +13,13 @@ import ru.practicum.interaction.dto.request.req_rsp.RequestsSaveAllReq;
 public interface RequestServiceClient {
     @GetMapping("/user/{userId}/event/{eventId}")
     List<RequestDto> getRequests(@PathVariable Long eventId, @PathVariable Long userId);
+
     @GetMapping("/event/{eventId}")
     List<RequestDto> getRequests(@PathVariable Long eventId);
+
     @PostMapping("/save-all")
     void saveAll(RequestsSaveAllReq request);
+
+    @GetMapping("/user/{userId}/event/{eventId}/take-part")
+    boolean isUserTakePart(@PathVariable Long userId, @PathVariable Long eventId);
 }

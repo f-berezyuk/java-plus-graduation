@@ -7,10 +7,10 @@ spring:
     config:
       discovery:
         enabled: true
-        serviceId: config-server
+        service-id: config-server
       fail-fast: true
 server:
-  port: 0
+  port: 9076
 eureka:
   client:
     serviceUrl:
@@ -20,6 +20,17 @@ eureka:
     hostname: localhost
     instanceId: "${spring.application.name}:${random.value}"
     leaseRenewalIntervalInSeconds: 10
-feign:
-  okhttp:
-    enabled=true:
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Открывает все endpoints (для production ограничьте)
+      base-path: /actuator
+  server:
+    port: ${server.port}  # Использует основной порт приложения

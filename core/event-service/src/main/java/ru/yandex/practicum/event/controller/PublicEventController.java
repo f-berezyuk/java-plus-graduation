@@ -8,9 +8,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.interaction.common.ValidationException;
 import ru.practicum.interaction.dto.event.EventFullDto;
 import ru.practicum.interaction.dto.event.EventShortDto;
 import ru.practicum.interaction.feign.client.EventServiceClient;
@@ -41,12 +43,24 @@ public class PublicEventController implements EventServiceClient {
     }
 
     @GetMapping("/{id}")
-    public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
-        return eventService.getPublicEvent(id, request);
+    public EventFullDto getEvent(@PathVariable Long id,
+                                 @RequestHeader("X-EWM-USER-ID") Long userId,
+                                 HttpServletRequest request) {
+        return eventService.getPublicEvent(id, userId, request);
     }
 
     @Override
     public EventFullDto getEventInternal(@PathVariable Long id) {
         return eventService.getPublicEvent(id);
+    }
+
+    @Override
+    public List<EventFullDto> getRecommendations(Long userId) {
+        return eventService.getRecommendations(userId);
+    }
+
+    @Override
+    public void likeEvent(Long eventId, Long userId) throws ValidationException {
+        eventService.likeEvent(eventId, userId);
     }
 }
