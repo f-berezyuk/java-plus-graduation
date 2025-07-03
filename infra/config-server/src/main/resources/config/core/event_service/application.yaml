@@ -35,20 +35,14 @@ logging:
 grpc:
   client:
     analyzer:
-      address: 'discovery:///analyzer'
-      enable-keep-alive: true
-      keep-alive-without-calls: true
-      negotiation-type: plaintext
-      enable-retry: true
-      retry-attempts: 15
-      retry-delay: 3000
+      address: 'static://localhost:9091'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304
     collector:
       address: 'discovery:///collector'
-      enable-keep-alive: true
-      keep-alive-without-calls: true
-      negotiation-type: plaintext
-      enable-retry: true
-      retry-attempts: 15
-      retry-delay: 3000
-  server:
-    enabled: false  # Отключаем встроенный сервер
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304

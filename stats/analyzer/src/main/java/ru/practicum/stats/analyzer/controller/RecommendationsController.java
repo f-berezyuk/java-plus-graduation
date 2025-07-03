@@ -1,37 +1,33 @@
 package ru.practicum.stats.analyzer.controller;
 
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
 import ru.practicum.ewm.stats.proto.RecommendationsControllerGrpc;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
 import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
-import ru.practicum.stats.analyzer.service.RecommendationsService;
+import ru.practicum.stats.analyzer.handler.RecommendationsHandler;
 
+@Slf4j
 @GrpcService
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RecommendationsController extends RecommendationsControllerGrpc.RecommendationsControllerImplBase {
-    final RecommendationsService service;
+
+    private final RecommendationsHandler handler;
 
     @Override
     public void getRecommendationsForUser(UserPredictionsRequestProto request,
                                           StreamObserver<RecommendedEventProto> responseObserver) {
         try {
-            service.getRecommendationsForUser(request, responseObserver);
+            log.info("Получение рекомендованных мероприятий для указанного пользователя {}", request);
+            handler.getRecommendationsForUser(request).forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(
-                    Status.INTERNAL
-                            .withDescription(e.getLocalizedMessage())
-                            .withCause(e)
-            ));
+            log.error("Ошибка получения рекомендаций.");
+            responseObserver.onError(e);
         }
     }
 
@@ -39,14 +35,12 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
     public void getSimilarEvents(SimilarEventsRequestProto request,
                                  StreamObserver<RecommendedEventProto> responseObserver) {
         try {
-            service.getSimilarEvents(request, responseObserver);
+            log.info("Получение похожих мероприятий {}", request);
+            handler.getSimilarEvents(request).forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(
-                    Status.INTERNAL
-                            .withDescription(e.getLocalizedMessage())
-                            .withCause(e)
-            ));
+            log.error("Ошибка получения похожих мероприятий.");
+            responseObserver.onError(e);
         }
     }
 
@@ -54,14 +48,13 @@ public class RecommendationsController extends RecommendationsControllerGrpc.Rec
     public void getInteractionsCount(InteractionsCountRequestProto request,
                                      StreamObserver<RecommendedEventProto> responseObserver) {
         try {
-            service.getInteractionsCount(request, responseObserver);
+            log.info("Получение мероприятий для каждого пользователя {}", request);
+
+            handler.getInteractionsCount(request).forEach(responseObserver::onNext);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(new StatusRuntimeException(
-                    Status.INTERNAL
-                            .withDescription(e.getLocalizedMessage())
-                            .withCause(e)
-            ));
+            log.error("Ошибка получения мероприятий.");
+            responseObserver.onError(e);
         }
     }
 }

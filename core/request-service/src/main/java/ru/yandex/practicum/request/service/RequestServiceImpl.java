@@ -6,13 +6,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.protobuf.Timestamp;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.stats.proto.ActionTypeProto;
-import ru.practicum.ewm.stats.proto.UserActionProto;
 import ru.practicum.interaction.common.ConflictException;
 import ru.practicum.interaction.common.NotFoundException;
 import ru.practicum.interaction.dto.event.EventFullDto;
@@ -80,24 +78,10 @@ public class RequestServiceImpl implements RequestService {
         if (eventRequest.getStatus() == RequestStatus.CONFIRMED) {
             int confirmedRequests = event.getConfirmedRequests() + 1;
             adminEventServiceClient.internalUpdateConfirmedRequests(event.getId(), confirmedRequests);
-            collectorClient.sendUserAction(createUserAction(eventId, userId, ActionTypeProto.ACTION_REGISTER,
-                    Instant.now()));
+            collectorClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_REGISTER, Instant.now());
         }
 
         return requestMapper.toDto(requestRepository.save(eventRequest));
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private UserActionProto createUserAction(Long eventId, Long userId, ActionTypeProto type, Instant timestamp) {
-        return UserActionProto.newBuilder()
-                .setUserId(userId)
-                .setEventId(eventId)
-                .setActionType(type)
-                .setTimestamp(Timestamp.newBuilder()
-                        .setSeconds(timestamp.getEpochSecond())
-                        .setNanos(timestamp.getNano())
-                        .build())
-                .build();
     }
 
     @Override

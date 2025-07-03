@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.protobuf.Timestamp;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -25,10 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.stats.proto.ActionTypeProto;
-import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
-import ru.practicum.ewm.stats.proto.UserActionProto;
-import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
 import ru.practicum.interaction.common.ConflictException;
 import ru.practicum.interaction.common.NotFoundException;
 import ru.practicum.interaction.common.PageableBuilder;
@@ -76,10 +72,6 @@ public class EventServiceImpl implements EventService {
     @SuppressWarnings("unused")
     @PersistenceContext
     private EntityManager entityManager;
-
-    private static InteractionsCountRequestProto getInteractionsRequest(Long eventId) {
-        return InteractionsCountRequestProto.newBuilder().addEventId(eventId).build();
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -292,16 +284,12 @@ public class EventServiceImpl implements EventService {
         // Выполнение запроса
         List<Event> resultList = query.getResultList();
         var eventsRatings =
-                analyzerClient.getInteractionsCount(getInteractionsRequest(resultList.stream().map(Event::getId).toList()))
-                        .stream().collect(Collectors.toMap(RecommendedEventProto::getEventId,
+                analyzerClient.getInteractionsCount(resultList.stream().map(Event::getId).toList())
+                        .collect(Collectors.toMap(RecommendedEventProto::getEventId,
                                 RecommendedEventProto::getScore));
         resultList.forEach(e -> e.setRating(eventsRatings.get(e.getId())));
         eventRepository.saveAll(resultList);
         return resultList.stream().map(mapper::toShortDto).toList();
-    }
-
-    private InteractionsCountRequestProto getInteractionsRequest(List<Long> eventId) {
-        return InteractionsCountRequestProto.newBuilder().addAllEventId(eventId).build();
     }
 
     private void assertDataValid(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
@@ -319,26 +307,12 @@ public class EventServiceImpl implements EventService {
         Event event =
                 eventRepository.findByIdAndState(id, EventState.PUBLISHED).orElseThrow(() -> new NotFoundException(
                         "Event with id " + id + " not found or not published"));
-        collectorClient.sendUserAction(createUserAction(id, userId, ACTION_VIEW, Instant.now()));
-        List<RecommendedEventProto> proto = analyzerClient.getInteractionsCount(
-                getInteractionsRequest(id)
-        );
+        collectorClient.collectUserAction(id, userId, ACTION_VIEW, Instant.now());
+        List<RecommendedEventProto> proto = analyzerClient.getInteractionsCount(List.of(id)).toList();
         Double rating = proto.isEmpty() ? 0.0 : proto.getFirst().getScore();
         event.setRating(rating);
         eventRepository.saveAndFlush(event);
         return mapper.toFullDto(event);
-    }
-
-    private UserActionProto createUserAction(Long eventId, Long userId, ActionTypeProto type, Instant timestamp) {
-        return UserActionProto.newBuilder()
-                .setUserId(userId)
-                .setEventId(eventId)
-                .setActionType(type)
-                .setTimestamp(Timestamp.newBuilder()
-                        .setSeconds(timestamp.getEpochSecond())
-                        .setNanos(timestamp.getNano())
-                        .build())
-                .build();
     }
 
     @Override
@@ -454,12 +428,8 @@ public class EventServiceImpl implements EventService {
     public List<EventFullDto> getRecommendations(Long userId) {
         log.info("Вывоз метода клиента: analyzerClient.getRecommendationsForUser with params userId = {}, maxResult",
                 userId);
-        List<Long> recommendationsForUser = analyzerClient.getRecommendationsForUser(
-                UserPredictionsRequestProto.newBuilder()
-                        .setUserId(userId)
-                        .setMaxResult(10)
-                        .build()
-        ).stream().map(RecommendedEventProto::getEventId).collect(Collectors.toList());
+        List<Long> recommendationsForUser = analyzerClient.getRecommendationsForUser(userId, 10)
+                .map(RecommendedEventProto::getEventId).collect(Collectors.toList());
         log.info("вывоз метода клиента analyzerClient.getRecommendationsForUser вернул данные: {}",
                 StringUtils.join(recommendationsForUser, ','));
 
@@ -473,7 +443,7 @@ public class EventServiceImpl implements EventService {
         if (!requestServiceClient.isUserTakePart(userId, eventId)) {
             throw new ValidationException("Пользователь " + userId + " не принимал участи в событии " + eventId);
         }
-        collectorClient.sendUserAction(createUserAction(eventId, userId, ActionTypeProto.ACTION_LIKE, Instant.now()));
+        collectorClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_LIKE, Instant.now());
     }
 
     private void validateEventStateForAdminUpdate(Event event, StateActionDto stateActionDto) {

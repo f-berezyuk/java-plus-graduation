@@ -20,6 +20,7 @@ public interface EventMapper {
 
     @Mapping(target = "eventDate", expression = "java(event.getEventDate())")
     @Mapping(target = "rating", expression = "java(event.getRating() == null ? 0.0 : event.getRating())")
+    @Mapping(target = "initiator.id", source = "userId")
     EventShortDto toShortDto(Event event);
 
     @Mapping(target = "initiator.id", source = "userId")

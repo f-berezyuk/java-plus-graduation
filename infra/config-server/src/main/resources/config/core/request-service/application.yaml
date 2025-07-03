@@ -29,12 +29,9 @@ logging:
 grpc:
   client:
     collector:
-      address: 'discovery:///collector'
-      enable-keep-alive: true
-      keep-alive-without-calls: true
-      negotiation-type: plaintext
-      enable-retry: true
-      retry-attempts: 15
-      retry-delay: 3000
-  server:
-    enabled: false  # Отключаем встроенный сервер
+      address: static://localhost:9090
+      # address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+

@@ -1,33 +1,52 @@
 package ru.practicum.stats.client;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import com.google.common.collect.Lists;
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 import ru.practicum.ewm.stats.proto.InteractionsCountRequestProto;
 import ru.practicum.ewm.stats.proto.RecommendationsControllerGrpc;
 import ru.practicum.ewm.stats.proto.RecommendedEventProto;
-import ru.practicum.ewm.stats.proto.SimilarEventsRequestProto;
 import ru.practicum.ewm.stats.proto.UserPredictionsRequestProto;
 
 @Component
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AnalyzerClient {
-    @GrpcClient("analyzer")
-    RecommendationsControllerGrpc.RecommendationsControllerBlockingStub client;
+    private final RecommendationsControllerGrpc.RecommendationsControllerBlockingStub client;
 
-    public List<RecommendedEventProto> getInteractionsCount(InteractionsCountRequestProto request) {
-        return Lists.newArrayList(client.getInteractionsCount(request));
+    public AnalyzerClient(@GrpcClient("analyzer") RecommendationsControllerGrpc.RecommendationsControllerBlockingStub client) {
+        this.client = client;
     }
 
-    public List<RecommendedEventProto> getSimilarEvent(SimilarEventsRequestProto request) {
-        return Lists.newArrayList(client.getSimilarEvents(request));
+    public Stream<RecommendedEventProto> getRecommendationsForUser(long userId, int maxResults) {
+        UserPredictionsRequestProto request = UserPredictionsRequestProto.newBuilder()
+                .setUserId(userId)
+                .setMaxResult(maxResults)
+                .build();
+
+        Iterator<RecommendedEventProto> iterator = client.getRecommendationsForUser(request);
+
+        return asStream(iterator);
     }
 
-    public List<RecommendedEventProto> getRecommendationsForUser(UserPredictionsRequestProto request) {
-        return Lists.newArrayList(client.getRecommendationsForUser(request));
+    public Stream<RecommendedEventProto> getInteractionsCount(List<Long> eventIds) {
+        InteractionsCountRequestProto request = InteractionsCountRequestProto.newBuilder()
+                .addAllEventId(eventIds)
+                .build();
+
+        Iterator<RecommendedEventProto> iterator = client.getInteractionsCount(request);
+
+        return asStream(iterator);
+    }
+
+    private Stream<RecommendedEventProto> asStream(Iterator<RecommendedEventProto> iterator) {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED),
+                false
+        );
     }
 }

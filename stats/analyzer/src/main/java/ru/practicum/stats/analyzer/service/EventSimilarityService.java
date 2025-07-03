@@ -11,43 +11,42 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.ewm.stats.avro.UserActionAvro;
-import ru.practicum.stats.analyzer.handler.UserActionHandler;
+import ru.practicum.ewm.stats.avro.EventSimilarityAvro;
+import ru.practicum.stats.analyzer.handler.EventSimilarityHandler;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserActionService implements Runnable {
+public class EventSimilarityService implements Runnable {
 
-    private final Consumer<Long, UserActionAvro> consumer;
-    private final UserActionHandler userActionHandler;
+    private final Consumer<Long, EventSimilarityAvro> consumer;
+    private final EventSimilarityHandler eventSimilarityHandler;
 
-    @Value("${analyzer.topic.user-action}")
-    private String topicUserAction;
+    @Value("${analyzer.topic.events-similarity}")
+    private String topicEventSimilarity;
     @Value("${spring.kafka.consumer.poll-timeout}")
     private int pollTimeout;
 
-    @Override
     public void run() {
         try {
-            consumer.subscribe(List.of(topicUserAction));
+            consumer.subscribe(List.of(topicEventSimilarity));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             //noinspection InfiniteLoopStatement
             while (true) {
-                ConsumerRecords<Long, UserActionAvro> records = consumer.poll(Duration.ofMillis(pollTimeout));
+                ConsumerRecords<Long, EventSimilarityAvro> records = consumer.poll(Duration.ofMillis(pollTimeout));
 
-                for (ConsumerRecord<Long, UserActionAvro> record : records) {
-                    UserActionAvro action = record.value();
-                    log.info("Получили действие пользователя {}", action);
+                for (ConsumerRecord<Long, EventSimilarityAvro> record : records) {
+                    EventSimilarityAvro eventSimilarity = record.value();
+                    log.info("Получили коэффициент схожести: {}", eventSimilarity);
 
-                    userActionHandler.handle(action);
+                    eventSimilarityHandler.handle(eventSimilarity);
                 }
                 consumer.commitAsync();
             }
         } catch (WakeupException ignored) {
         } catch (Exception e) {
-            log.error("Ошибка чтения данных из топика {}", topicUserAction);
+            log.error("Ошибка чтения данных из топика {}", topicEventSimilarity);
         } finally {
             try {
                 consumer.commitSync();

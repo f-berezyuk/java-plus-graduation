@@ -47,6 +47,18 @@ management:
       base-path: /actuator
   server:
     port: ${server.port}  # Использует основной порт приложения
+
 grpc:
-  server:
-    enabled: false  # Отключаем встроенный сервер
+  client:
+    analyzer:
+      address: 'static://localhost:9091'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304
+    collector:
+      address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304

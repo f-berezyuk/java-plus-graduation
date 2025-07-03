@@ -123,8 +123,7 @@ services:
       bash -c "
       echo 'Waiting for config-server and discovery-server...';
       sleep 20;
-      done;
-      echo 'Starting aggregator-server...';
+      echo 'Starting analyzer-server...';
       java -jar /app.jar
       "
 

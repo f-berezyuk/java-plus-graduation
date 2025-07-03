@@ -1,35 +1,24 @@
 package ru.practicum.stats.analyzer.repository;
 
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.stats.analyzer.model.UserAction;
-import ru.practicum.stats.analyzer.model.UserActionId;
 
-public interface UserActionRepository extends JpaRepository<UserAction, UserActionId> {
-    @Query("""
-            SELECT ua.eventId, SUM(ua.score)
-            FROM UserAction ua
-            WHERE ua.eventId IN :eventIds
-            GROUP BY ua.eventId
-            """)
-    List<Object[]> findInteractions(@Param("eventIds") List<Long> eventIds);
+public interface UserActionRepository extends JpaRepository<UserAction, Long> {
 
-    @Query("""
-            SELECT ua.eventId
-            FROM UserAction ua
-            WHERE ua.userId = :userId
-            ORDER BY ua.timestamp DESC
-            LIMIT :limit
-            """)
-    List<Long> findRecentEventIdsByUserId(@Param("userId") Long userId, @Param("limit") int limit);
+    List<UserAction> findAllByUserId(Long userId, PageRequest pageRequest);
 
-    @Query("""
-            SELECT ua
-            FROM UserAction ua
-            WHERE ua.userId = :userId
-            """)
-    List<UserAction> findAllInteractionsByUser(@Param("userId") Long userId);
+    boolean existsByEventIdAndUserId(Long eventId, Long userId);
+
+    List<UserAction> findAllByEventIdInAndUserId(Set<Long> viewedEvents, Long userId);
+
+    UserAction findByEventIdAndUserId(Long eventId, Long userId);
+
+    @Query("select COALESCE(SUM(ua.mark), 0) from UserAction as ua where ua.eventId = :eventId")
+    Float getSumWeightByEventId(@Param("eventId") Long eventId);
 }

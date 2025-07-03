@@ -1,12 +1,11 @@
-package ru.practicum.stats.aggregator;
+package ru.practicum.stats.analyzer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AggregatorApplication {
-
+public class AnalyzerApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AggregatorApplication.class, args);
+        SpringApplication.run(AnalyzerApplication.class, args);
     }
 }

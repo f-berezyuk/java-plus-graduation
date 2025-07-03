@@ -4,35 +4,36 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "user_actions")
-@IdClass(UserActionId.class)
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@ToString
+@Table(name = "user_actions")
 public class UserAction {
+
     @Id
-    @Column(name = "user_id")
-    Long userId;
-    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(name = "event_id")
-    Long eventId;
-    @Column(name = "user_score")
-    Double score;
-    @Column(name = "timestamp_action")
-    Instant timestamp;
+    private Long eventId;
+
+    @Column(name = "user_id")
+    private Long userId;
+
+    private Float mark;
+
+    private Instant timestamp;
 }

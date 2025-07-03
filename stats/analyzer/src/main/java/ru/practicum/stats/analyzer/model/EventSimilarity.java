@@ -1,33 +1,39 @@
 package ru.practicum.stats.analyzer.model;
 
+import java.time.Instant;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "event_similarities")
-@IdClass(EventSimilarityId.class)
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@ToString
+@Table(name = "events_similarity")
 public class EventSimilarity {
+
     @Id
-    @Column(name = "first_event")
-    Long first;
-    @Id
-    @Column(name = "second_event")
-    Long second;
-    Double score;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "event_a")
+    private Long eventA;
+
+    @Column(name = "event_b")
+    private Long eventB;
+
+    private Double score;
+
+    private Instant timestamp;
 }
