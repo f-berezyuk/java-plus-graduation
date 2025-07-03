@@ -1,5 +1,6 @@
 package ru.yandex.practicum.event.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,8 +19,12 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.ewm.stats.proto.ActionTypeProto;
+import ru.practicum.ewm.stats.proto.RecommendedEventProto;
 import ru.practicum.interaction.common.ConflictException;
 import ru.practicum.interaction.common.NotFoundException;
 import ru.practicum.interaction.common.PageableBuilder;
@@ -37,6 +43,8 @@ import ru.practicum.interaction.dto.request.RequestDto;
 import ru.practicum.interaction.dto.request.RequestStatusDto;
 import ru.practicum.interaction.dto.request.req_rsp.RequestsSaveAllReq;
 import ru.practicum.interaction.feign.client.RequestServiceClient;
+import ru.practicum.stats.client.AnalyzerClient;
+import ru.practicum.stats.client.CollectorClient;
 
 import ru.yandex.practicum.categories.service.CategoriesService;
 import ru.yandex.practicum.event.mapper.EventMapper;
@@ -47,16 +55,20 @@ import ru.yandex.practicum.event.model.Location;
 import ru.yandex.practicum.event.repository.EventRepository;
 import ru.yandex.practicum.event.repository.LocationRepository;
 
+import static ru.practicum.ewm.stats.proto.ActionTypeProto.ACTION_VIEW;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventServiceImpl implements EventService {
     private final RequestServiceClient requestServiceClient;
     private final EventRepository eventRepository;
     private final LocationRepository locationRepository;
     private final EventMapper mapper;
     private final ReqMapper requestMapper;
-    private final ViewService viewService;
     private final CategoriesService categoriesService;
+    private final AnalyzerClient analyzerClient;
+    private final CollectorClient collectorClient;
     @SuppressWarnings("unused")
     @PersistenceContext
     private EntityManager entityManager;
@@ -259,7 +271,7 @@ public class EventServiceImpl implements EventService {
         if ("EVENT_DATE".equals(sort)) {
             cq.orderBy(cb.asc(event.get("eventDate")));
         } else if ("VIEWS".equals(sort)) {
-            cq.orderBy(cb.desc(event.get("views")));
+            cq.orderBy(cb.desc(event.get("rating")));
         }
 
         // Создание запроса
@@ -271,8 +283,12 @@ public class EventServiceImpl implements EventService {
 
         // Выполнение запроса
         List<Event> resultList = query.getResultList();
+        var eventsRatings =
+                analyzerClient.getInteractionsCount(resultList.stream().map(Event::getId).toList())
+                        .collect(Collectors.toMap(RecommendedEventProto::getEventId,
+                                RecommendedEventProto::getScore));
+        resultList.forEach(e -> e.setRating(eventsRatings.get(e.getId())));
         eventRepository.saveAll(resultList);
-        viewService.registerAll(resultList, request);
         return resultList.stream().map(mapper::toShortDto).toList();
     }
 
@@ -287,12 +303,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto getPublicEvent(Long id, HttpServletRequest request) {
+    public EventFullDto getPublicEvent(Long id, Long userId, HttpServletRequest request) {
         Event event =
                 eventRepository.findByIdAndState(id, EventState.PUBLISHED).orElseThrow(() -> new NotFoundException(
                         "Event with id " + id + " not found or not published"));
+        collectorClient.collectUserAction(id, userId, ACTION_VIEW, Instant.now());
+        List<RecommendedEventProto> proto = analyzerClient.getInteractionsCount(List.of(id)).toList();
+        Double rating = proto.isEmpty() ? 0.0 : proto.getFirst().getScore();
+        event.setRating(rating);
         eventRepository.saveAndFlush(event);
-        viewService.register(event, request);
         return mapper.toFullDto(event);
     }
 
@@ -403,6 +422,28 @@ public class EventServiceImpl implements EventService {
         event.setConfirmedRequests(confirmedRequests);
         event = eventRepository.saveAndFlush(event);
         mapper.toFullDto(event);
+    }
+
+    @Override
+    public List<EventFullDto> getRecommendations(Long userId) {
+        log.info("Вывоз метода клиента: analyzerClient.getRecommendationsForUser with params userId = {}, maxResult",
+                userId);
+        List<Long> recommendationsForUser = analyzerClient.getRecommendationsForUser(userId, 10)
+                .map(RecommendedEventProto::getEventId).collect(Collectors.toList());
+        log.info("вывоз метода клиента analyzerClient.getRecommendationsForUser вернул данные: {}",
+                StringUtils.join(recommendationsForUser, ','));
+
+        List<Event> events = eventRepository.findAllById(recommendationsForUser);
+
+        return events.stream().map(mapper::toFullDto).toList();
+    }
+
+    @Override
+    public void likeEvent(Long eventId, Long userId) {
+        if (!requestServiceClient.isUserTakePart(userId, eventId)) {
+            throw new ValidationException("Пользователь " + userId + " не принимал участи в событии " + eventId);
+        }
+        collectorClient.collectUserAction(eventId, userId, ActionTypeProto.ACTION_LIKE, Instant.now());
     }
 
     private void validateEventStateForAdminUpdate(Event event, StateActionDto stateActionDto) {

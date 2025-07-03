@@ -24,4 +24,6 @@ public interface RequestService {
     List<Request> getConfirmedRequests(Long eventId, RequestStatus status);
 
     List<RequestDto> getEventRequests(Long eventId);
+
+    boolean isUserTakePart(Long userId, Long eventId);
 }

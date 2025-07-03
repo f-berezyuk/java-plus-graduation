@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS event (
     description TEXT, -- <- Исправлено
     confirmed_requests INTEGER NOT NULL,
     participant_limit INTEGER NOT NULL,
+    rating DOUBLE NOT NULL DEFAULT 0.0,
     request_moderation BOOLEAN NOT NULL,
     paid BOOLEAN NOT NULL,
     created_on TIMESTAMP WITHOUT TIME ZONE,

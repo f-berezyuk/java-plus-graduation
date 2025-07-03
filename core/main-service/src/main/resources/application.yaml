@@ -20,3 +20,16 @@ eureka:
     hostname: localhost
     instanceId: "${spring.application.name}:${random.value}"
     leaseRenewalIntervalInSeconds: 10
+management:
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Открывает все endpoints (для production ограничьте)
+      base-path: /actuator
+  server:
+    port: ${server.port}  # Использует основной порт приложения

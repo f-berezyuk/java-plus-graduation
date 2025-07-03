@@ -1,6 +1,7 @@
 package ru.yandex.practicum.categories.service;
 
 import java.util.List;
+import java.util.Set;
 
 import ru.practicum.interaction.dto.categories.CategoryDto;
 import ru.practicum.interaction.dto.categories.NewCategoryDto;
@@ -19,4 +20,6 @@ public interface CategoriesService {
     List<CategoryDto> findBy(int from, int size);
 
     Category getOrThrow(Long id);
+
+    List<CategoryDto> getCategoriesByIds(Set<Long> categoriesIds);
 }

@@ -8,12 +8,16 @@ spring:
       discovery:
         enabled: true
         serviceId: config-server
-      fail-fast: true
+      fail-fast: false
       retry:
-        initial-interval: 1000 # Начальный интервал (мс)
-        max-interval: 2000     # Максимальный интервал (мс)
-        multiplier: 1.5        # Множитель интервала
-        max-attempts: 5        # Максимум попыток
+        enabled: true
+        initial-interval: 1500  # Начальный интервал (мс)
+        max-interval: 5000      # Максимальный интервал (мс)
+        multiplier: 2.0         # Множитель интервала
+        max-attempts: 10        # Максимум попыток
+        # Дополнительные настройки для устойчивости
+        request-read-timeout: 5000
+        request-connect-timeout: 3000
 server:
   port: 8080
 eureka:
@@ -25,3 +29,17 @@ eureka:
     hostname: localhost
     instance-id: "${spring.application.name}:${server.port}"
     leaseRenewalIntervalInSeconds: 10
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Открывает все endpoints (для production ограничьте)
+      base-path: /actuator
+  server:
+    port: ${server.port}  # Использует основной порт приложения

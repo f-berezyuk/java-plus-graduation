@@ -66,6 +66,8 @@ public class Event {
     @OneToMany(mappedBy = "event")
     private List<EventView> views;
 
+    private Double rating;
+
     private boolean requestModeration = true;
     @NotNull
     private Boolean paid;

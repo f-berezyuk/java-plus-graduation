@@ -40,4 +40,9 @@ public class InternalRequestController implements RequestServiceClient {
     public void saveAll(@RequestBody RequestsSaveAllReq request) {
         requestService.saveAll(request.getRequests());
     }
+
+    @Override
+    public boolean isUserTakePart(Long userId, Long eventId) {
+        return requestService.isUserTakePart(userId, eventId);
+    }
 }

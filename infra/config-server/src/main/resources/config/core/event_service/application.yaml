@@ -5,9 +5,12 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
+  main:
+    banner-mode: off
+    log-startup-info: false
   datasource:
-    driverClassName: org.postgresql.Driver
-#    url: jdbc:postgresql://ewm-db:5432/ewm-event
+    driver-class-name: org.postgresql.Driver
+    #    url: jdbc:postgresql://ewm-db:5432/ewm-event
     url: jdbc:postgresql://localhost:5432/ewm-event
 
     username: root
@@ -15,6 +18,9 @@ spring:
   sql:
     init:
       mode: always
+  grpc:
+    server:
+      enabled: false  # Отключаем встроенный сервер
 feign:
   okhttp:
     enabled=true:
@@ -25,3 +31,18 @@ logging:
     org.springframework.orm.jpa.JpaTransactionManager: DEBUG
     org.springframework.transaction.interceptor: TRACE
     org.springframework.transaction: INFO
+
+grpc:
+  client:
+    analyzer:
+      address: 'static://localhost:9091'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304
+    collector:
+      address: 'discovery:///collector'
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
+      maxInboundMessageSize: 4194304
